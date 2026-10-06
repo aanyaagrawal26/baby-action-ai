@@ -1,0 +1,20 @@
+# Requirements for Baby Action AI inference service
+# Tested on: Python 3.14.2, macOS ARM64 (Apple Silicon)
+#
+# IMPORTANT NOTES:
+# 1. mediapipe 1.x removed the mp.solutions API. Use >=0.10.30, <1.0.
+# 2. mediapipe 0.10.30+ installs opencv-contrib-python as a dependency.
+#    Do NOT also install opencv-python or opencv-python-headless — they conflict.
+# 3. numpy >=2.0 is required by mediapipe 0.10.30+. The original <2.1 cap is removed.
+# 4. The MediaPipe pose landmarker task bundle must be downloaded separately:
+#    curl -L "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/latest/pose_landmarker_lite.task" \
+#         -o models/pose_landmarker_lite.task
+
+numpy>=2.0
+scikit-learn>=1.5
+torch>=2.5
+Pillow>=10.0
+fastapi>=0.115
+uvicorn[standard]>=0.30
+python-multipart>=0.0.9
+mediapipe>=0.10.30,<1.0

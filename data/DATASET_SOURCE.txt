@@ -1,0 +1,5 @@
+InfActPrimitive public pose release
+Official repository: https://github.com/ostadabbas/Video-Based-Infant-Action-Recognition
+Official download: https://drive.google.com/file/d/1TiuTul5b5XtJgKZeOCnrAH8WKmxb6Rld/view?usp=sharing
+The raw dataset is not redistributed in this archive; download it from the official source and place the 2D pickle at:
+data/infactprimitive/InfActPrimitive/2d/InfAct_plus.pkl
