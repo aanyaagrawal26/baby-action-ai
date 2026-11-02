@@ -23,7 +23,7 @@ export interface InferenceContext {
   action: string;
   /** Raw argmax label before threshold, e.g. "prone" */
   rawAction?: string;
-  /** Smoothed max probability 0–1 */
+  /** Maximum still-photo model score, 0–1 (not calibrated confidence) */
   confidence: number;
   /** true when confidence < threshold (0.56) */
   isUnknown: boolean;
@@ -194,7 +194,7 @@ export function buildStrategyC(ctx: InferenceContext): BuiltPrompt {
     `INFERENCE RESULT:\n` +
     `  Action (thresholded):  ${ctx.action}\n` +
     `  Raw argmax prediction: ${ctx.rawAction ?? ctx.action}\n` +
-    `  Smoothed confidence:   ${confidencePct}% (threshold: ${(m.confidenceThreshold * 100).toFixed(0)}%)\n` +
+    `  Still-photo model score: ${confidencePct}% (threshold: ${(m.confidenceThreshold * 100).toFixed(0)}%)\n` +
     `  Is unknown:            ${ctx.isUnknown}\n\n` +
     `MODEL INFORMATION:\n` +
     `  Architecture: ${m.architecture}\n` +

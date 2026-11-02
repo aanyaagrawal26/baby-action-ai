@@ -1,31 +1,11 @@
-# Backend inference upgrade checklist
+# Project outcomes
 
-- [x] Upgrade the static project to a backend-capable web stack.
-- [x] Add the trained checkpoint/runtime contract and inference dependencies.
-- [x] Implement an endpoint for image and video uploads.
-- [x] Return action, confidence, input metadata, and model provenance.
-- [x] Replace the upload demo timeout with a real request and typed result state.
-- [x] Handle unsupported files, inference failures, and low-confidence results.
-- [x] Validate the end-to-end flow with representative test inputs.
-- [x] Save and deliver the connected application checkpoint.
-
-- [x] Add FastAPI and Uvicorn to the local requirements manifest.
-- [x] Add thresholded unknown/low-confidence handling to the API and UI.
-- [x] Run a successful end-to-end upload through `/api/infer` with a real test image or video.
-
-- [x] Add animated upload inference progress and status messaging.
-- [x] Add explicit local camera start/stop controls and consent messaging.
-- [x] Capture webcam frames without recording or storing the live feed.
-- [x] Send sampled live frames to the backend and show current action/confidence.
-- [x] Handle camera permission denial, unavailable camera, backend errors, and cleanup.
-- [x] Verify desktop/mobile UI and save the live-feed checkpoint.
-
-- [x] Verify the live-camera and upload-progress UI at a narrow mobile breakpoint.
-- [x] Save and deliver a new checkpoint after the live-feed changes.
-
-- [x] Add the natural contactless HCI problem statement to the website narrative.
-- [x] Explain the distinction between baby-action recognition and caregiver gesture commands.
-- [x] Add an observatory interaction concept that maps recognized gestures/context to meaningful actions.
-- [x] Document the HCI integration in the local project README.
-- [x] Verify HCI copy and interaction states on desktop and mobile.
-- [x] Save and deliver the HCI-integrated checkpoint.
+- [x] **Inspect and repair the supplied baby-action-ai project.** “check this file, fix it” — preserve the supplied trained model and supported stack, fix photo decoding/inference and make the photo-upload workflow operational.
+- [x] **Upload and review a baby photo.** “when we upload photos of babies” — accept accessible JPEG, PNG and WebP selection and drop, show local preview, replace/remove controls, validate empty/unsupported/unreadable/oversized inputs, and analyze one photo independently without carrying a previous prediction into it. Full-body framing is helpful but not required when a supported posture's relevant landmarks remain clear.
+- [x] **Return a cautious supported posture estimate.** “it should determine wheter the baby is standing, sitting, or whatever action it is doing.” Recognize standing, sitting, on all fours, on the tummy or on the back, or return a clear unknown/ambiguous/no-pose result. Do not invent an open-ended action; a still frame cannot establish movement. Distinguish model raw scores from verified correctness, disclose when a body-shape safeguard overrides the MLP, and do not override a learned standing/sitting result with the partial all-fours fallback.
+- [x] **Resolve the user's “Not sure yet” photo case.** For a clear head-up arms-and-knees posture with feet or a second knee cropped, require head visibility ≥0.30; both shoulders, elbows, wrists and hips in-frame at visibility ≥0.25 each; and one same-side hip-to-knee support pair at visibility ≥0.25. Label the narrow shape-based estimate; abstain when its required landmarks are weak.
+- [x] **Provide the redesigned responsive still-photo website.** Make the upload, progress, result, uncertainty, errors, supported postures and research limitations clear and keyboard accessible on desktop, tablet and mobile. Avoid duplicate submissions and stale results.
+- [x] **Demonstrate meaningful event detection from a short clip, as requested by faculty.** Let a caregiver select a short MP4/WebM clip. Keep the source video local in the browser, sample at most eight bounded JPEG frames, and send those frames sequentially to the existing still-image classifier. Use a deterministic temporal rule to report observed posture transitions, with clip-relative timestamps and visible supporting evidence. Require at least two consecutive model-only samples at score ≥0.70 on each side of a transition; unknown, weak or geometry-overridden samples break the evidence chain. Never interpret a transition as a health, danger, safety or developmental event.
+- [x] **Demonstrate an honest parent-alert workflow, as requested by faculty.** Show a clearly labeled in-app/demo-inbox alert preview only for a transition that satisfies the repeated-evidence rule. Display the evidence and a “Demo only — no message sent” boundary. Do not claim real push/SMS/email delivery or reliable ongoing monitoring; explain that production delivery would require recipient consent, secure registration, a background provider/queue, retries, delivery receipts and evaluation of false positives and false negatives.
+- [x] **Justify the value of GenAI versus conventional computer vision, as requested by faculty.** Keep MediaPipe/MLP image classification and the deterministic temporal rule as the measurable event-detection and alert gate. Offer an optional short caregiver-language event summary that receives only allow-listed event labels/timing/count—not images or video—and cannot alter classifications, evidence thresholds or alert decisions. Label generated output vs a deterministic fallback. Explain that GenAI adds flexible wording/context, not more reliable computer vision.
+- [x] **Deliver a clean, verified private research preview and source project.** Start the website and required inference service, verify the original photo case and event workflow logic, test accessible/responsive UI, preserve the research/non-commercial model limitation, keep original clips and photos out of persistent storage, update the faculty response documentation, and package a source archive with no secrets, private configuration, caches or transient test images. Keep automatic/public publication disabled.

@@ -9,7 +9,6 @@ build/
 
 # Environment variables
 .venv
-models/pose_landmarker_lite.task
 .env
 .env.local
 .env.development.local

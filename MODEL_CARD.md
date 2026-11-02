@@ -6,7 +6,7 @@
 - Input: 17 Human3.6M-compatible 2D joints, hip-centered and scale-normalized, plus 17 keypoint visibility scores (51 features)
 - Labels: `supine`, `prone`, `sitting`, `standing`, `all-fours`
 - Runtime pose extractor: MediaPipe Pose
-- Live stability: 5-frame probability moving average
+- Inference unit: one still photo per request; no temporal smoothing
 - Unknown threshold: 0.56 by default
 
 ## Training data

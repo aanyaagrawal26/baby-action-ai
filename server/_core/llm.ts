@@ -69,6 +69,7 @@ export type InvokeParams = {
   model?: string;
   thinking?: Record<string, unknown>;
   reasoning?: Record<string, unknown>;
+  max_completion_tokens?: number;
 };
 
 export type ToolCall = {
@@ -356,6 +357,7 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     reasoning,
     maxTokens,
     max_tokens,
+    max_completion_tokens,
   } = params;
 
   const payload: Record<string, unknown> = {
@@ -381,6 +383,9 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
   const resolvedMaxTokens = max_tokens ?? maxTokens;
   if (typeof resolvedMaxTokens === "number") {
     payload.max_tokens = resolvedMaxTokens;
+  }
+  if (typeof max_completion_tokens === "number") {
+    payload.max_completion_tokens = max_completion_tokens;
   }
 
   if (thinking) {

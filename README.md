@@ -1,332 +1,78 @@
-# Baby Action AI — GestureVerse-AI
+# Baby Action AI
 
-**Applied Generative AI | 5th Semester B.Tech | Review-2 Project**
+A responsive research prototype for still-photo posture review and short-clip posture-transition demonstrations. Choose one JPEG, PNG or WebP photo for a single pose estimate, or review a short MP4/WebM clip through sequential sampled frames and a transparent event rule.
 
-A local-first infant posture recognition system that combines a trained MLP classifier with Generative AI to produce natural-language explanations of detected actions.
+> **Research prototype only.** This is not a medical, safety or developmental assessment. The supplied InfActPrimitive model package states that it is for non-commercial research, teaching, scientific publication and personal experimentation and is not intended for product deployment. Review the source terms before using or distributing this model as a product.
 
-> **Research prototype only.** Not a medical device. Not validated for clinical, developmental, or safety decisions.
+## What it can recognize
 
----
+The supplied classifier has five pose labels: `standing`, `sitting`, `all-fours`, `prone` (on the tummy), and `supine` (on the back). The learned model returns `unknown` when MediaPipe does not find a usable pose or its highest score is below the 0.56 threshold, unless one of the clearly disclosed, narrow posture-shape safeguards applies. A still photo can show an all-fours posture; it cannot establish that a baby is moving or crawling. The model detects one person pose and does not verify that the person is a baby.
 
-## Project Objective
+Scores are relative softmax outputs, not calibrated probabilities. The checkpoint's validation report lists 64.21% frame accuracy and 55.45% balanced accuracy over pose-sequence data, with weaker validation recall for sitting and standing. The source data contains pose landmarks rather than raw RGB baby photos, so these numbers are not a guarantee for a user's photo.
 
-> Recognise infant posture/action from visual input and transform the model's structured prediction into understandable natural-language information.
+## Conservative posture safeguards
 
----
+For a clearly visible upright pose, the service checks both knee-and-ankle chains and torso geometry for standing or sitting. A narrow chest-raised, arms-supported tummy-time pattern can also override the learned classifier. Clear upright and supported-tummy geometry are resolved before the all-fours fallback.
 
-## Architecture Overview
+A head-up hands-and-knees posture can be recognized without the baby's feet or both knees in frame, but only when the landmarks supporting that shape are strong: the head must be at least 0.30 visibility; both shoulders, elbows, wrists and hips must be in-frame at 0.25 visibility or higher; and at least one same-side hip-to-knee support pair must also be at 0.25 or higher. A low-confidence singleton cannot create a synthetic center point. This all-fours correction can replace a learned back/tummy/all-fours/unknown label when the separate support shape is clear, but never a learned standing or sitting label. The UI names the shape-based correction and shows all five raw model scores separately.
 
-```
-Image / Video Input
-       ↓
-MediaPipe Pose Detection  (33 landmarks → 17 H3.6M joints)
-       ↓
-Pose Normalisation        (hip-centred, scale-normalised)
-       ↓
-51-D Feature Construction (34 normalised xy + 17 visibility scores)
-       ↓
-Trained MLP Classifier    (2-layer neural network, 5 posture classes)
-       ↓
-Confidence & Unknown Handling  (5-frame smoothing, threshold 0.56)
-       ↓
-Prompt Construction       (Strategy A / B / C — server-side)
-       ↓
-LLM / Generative AI       (Forge API — OpenAI-compatible)
-       ↓
-Natural-Language Explanation  (displayed with prediction + confidence)
-```
+These rules are cautious pose-shape estimates, not calibrated confidence or a validation guarantee. Other cropped, low-visibility, partly covered or unusually angled photos can still return `unknown` or an incorrect label. When 2D landmarks cannot distinguish back from tummy, the service withholds the guess rather than treating a high score as proof.
 
-**The LLM does not perform classification. The MLP does not generate language. These are two separate systems.**
+## Photo privacy and limits
 
----
+The browser sends the selected photo through the app's same-origin API proxy to the local inference service. The service processes the photo in memory and does not save the image. The photo is not used by the optional explanation endpoint; that endpoint receives only the predicted label and score. Good light and a clear view of the baby's head, shoulders, hips and supporting limbs help. Full-body framing is useful but is not mandatory for every supported shape.
 
-## Features
+## Clip event review and alert demonstration
 
-- **Image upload inference** — upload a JPG/PNG and get a real MLP prediction
-- **Live camera inference** — webcam frames sampled every 2.2 s, sent to MLP
-- **Three prompt engineering strategies:**
-  - Strategy A: Simple one-sentence description
-  - Strategy B: Caregiver-friendly explanation (no medical claims)
-  - Strategy C: Technical analysis distinguishing ML from GenAI output
-- **Prompt Engineering Lab** — compare all three strategies side by side
-- **Accurate pipeline visualization** — 10-stage numbered diagram
-- **Model analysis section** — real validation metrics, per-class recall chart
-- **Rule-based fallback** — if LLM key is missing/fails, a deterministic fallback is clearly labelled
+The event workbench accepts MP4/WebM clips between 2.5 and 20 seconds and at most 50 MB. The original video stays in the browser. It samples up to eight compressed still frames, sends them sequentially to the existing image endpoint, and discards temporary canvas data. It does not store the clip or sampled frames. A usable event candidate requires at least two consecutive **model-only** samples before and two after a supported posture change, with each raw model score at or above 0.70; unknown, ambiguous, weak, geometry-overridden and long-gap samples break the evidence chain. The score is uncalibrated and this guard is not validated event reliability.
 
----
+The page may display a local **demo inbox alert preview** for a qualifying posture transition, with the clip-relative time and supporting sample counts. It never sends push notifications, SMS, email or parent-account messages. It does not run in the background or monitor continuously. A scripted “See example” walkthrough is labeled as simulated and is not a baby video or classifier prediction.
 
-## Technology Stack
+## Why use GenAI alongside computer vision?
 
-| Layer | Technology |
-|---|---|
-| Frontend | React 19, TypeScript, Tailwind CSS v4, tRPC, Recharts |
-| Backend | Node.js, Express, tRPC |
-| ML Inference | Python 3.14, FastAPI, uvicorn |
-| Pose Detection | MediaPipe Pose (Tasks API) |
-| Classifier | PyTorch — 2-layer normalized MLP |
-| Generative AI | Forge API (OpenAI-compatible LLM) |
-| Package manager | pnpm |
+MediaPipe and the existing neural network perform the visual labeling; a deterministic rule checks repeated labels and decides whether to show a candidate. GenAI is only an optional language layer after that decision: it can turn the fixed, allow-listed posture labels and time into a short caregiver-readable summary. The event-summary endpoint receives structured text only—not a photo, video or open-ended prompt. It cannot change a classification or trigger an alert, and a deterministic text fallback is used when GenAI is unavailable. The benefit is flexible wording, **not** better vision accuracy; if personalized wording is not needed, a template is simpler.
 
----
+## Alert reliability boundary
 
-## ML Model Details
+This is a capstone research demo, not a dependable baby monitor. The current model reports 64.21% frame accuracy and 55.45% balanced accuracy on pose-sequence validation; these values do not measure video-event accuracy, false alerts per hour, alert latency or recipient-delivery reliability. A real notification service would require caregiver consent and verified recipient setup, a secure background provider/queue, retry and delivery receipts, rate limiting, audit/privacy controls, and independent event-level evaluation on representative consented videos. No safety, health, developmental, danger or emergency meaning is inferred here.
 
-| Property | Value |
-|---|---|
-| Architecture | 2-layer normalized MLP |
-| Input | 51-D (34 normalised xy + 17 visibility) |
-| Classes | supine, prone, sitting, standing, all-fours |
-| Dataset | InfActPrimitive public pose-only release |
-| Frame accuracy | 64.21% (offline validation, 9 307 frames) |
-| Balanced accuracy | 55.45% |
-| Mean confidence | 77.87% (**not** the same as accuracy) |
-| Confidence threshold | 0.56 (below → "unknown") |
+## Run locally
 
----
-
-## Prerequisites
-
-### Node.js / pnpm
-
-- Node.js 18+
-- pnpm — install with `npm install -g pnpm`
-
-### Python
-
-- Python 3.10–3.14 (tested on 3.14.2, macOS ARM64)
-- pip
-
----
-
-## Installation
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/aanyaagrawal26/baby-action-ai.git
-cd baby-action-ai
-```
-
-### 2. Install Node dependencies
+Requirements: Node.js 20+, pnpm 10.4.1 (pinned in `package.json`), and Python 3.10–3.14 with pip.
 
 ```bash
 pnpm install
-```
-
-### 3. Set up the Python virtual environment
-
-```bash
 python3 -m venv .venv
-source .venv/bin/activate        # macOS / Linux
-# .venv\Scripts\activate         # Windows
-
-pip install --upgrade pip
-pip install -r requirements.txt
+.venv/bin/pip install -r requirements.txt
 ```
 
-> **Note:** `requirements.txt` uses `mediapipe>=0.10.30,<1.0`. mediapipe 1.x removed the `mp.solutions` API and is not compatible.
-
-### 4. Download the MediaPipe pose model bundle
-
-This file (~5.5 MB) is excluded from the repository. Download it once:
+Start the photo-analysis API in one terminal:
 
 ```bash
-curl -L "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/latest/pose_landmarker_lite.task" \
-     -o models/pose_landmarker_lite.task
+.venv/bin/uvicorn inference_api:app --host 127.0.0.1 --port 8000
 ```
 
-### 5. Configure environment variables
+In a second terminal, start the website:
 
 ```bash
-cp .env.example .env
-# Edit .env and fill in BUILT_IN_FORGE_API_KEY
-```
-
-See [Environment Variables](#environment-variables) below.
-
----
-
-## Running the Project
-
-You need **two terminals**.
-
-### Terminal 1 — Python inference service
-
-```bash
-cd baby-action-ai
-source .venv/bin/activate
-uvicorn inference_api:app --host 127.0.0.1 --port 8000
-```
-
-Verify it started:
-```bash
-curl http://127.0.0.1:8000/health
-# Expected: {"ok":true,"model":"...infant_pose_mlp.pt",...}
-```
-
-### Terminal 2 — Node dev server
-
-```bash
-cd baby-action-ai
 pnpm dev
 ```
 
-Open **http://localhost:3000** in your browser.
+Open `http://localhost:3000`. The website proxies still frames to `http://127.0.0.1:8000` by default. Set `INFERENCE_API_URL` to change that internal target. The optional `/api/event-summary` route uses the configured built-in language model when available and automatically falls back to a fixed summary. The FastAPI task bundle and checkpoint are included under `models/` in this research copy. The browser interface caps photos at 15 MB and video clips at 50 MB and 20 seconds; the API image limit is 50 MB.
 
----
-
-## Environment Variables
-
-Copy `.env.example` to `.env` and configure:
-
-| Variable | Required | Description |
-|---|---|---|
-| `BUILT_IN_FORGE_API_KEY` | For live LLM | API key for the Forge LLM endpoint |
-| `BUILT_IN_FORGE_API_URL` | No | Override Forge base URL (default: `https://forge.manus.im`) |
-| `INFERENCE_API_URL` | No | Python service URL (default: `http://127.0.0.1:8000`) |
-| `MODEL_PATH` | No | Path to MLP checkpoint (default: `models/infant_pose_mlp.pt`) |
-| `POSE_TASK_PATH` | No | Path to MediaPipe task bundle (default: `models/pose_landmarker_lite.task`) |
-
-**Without `BUILT_IN_FORGE_API_KEY`:** The `/api/explain` route returns a rule-based fallback clearly labelled "LLM generation unavailable". ML inference works normally.
-
-**Never commit `.env` to version control.**
-
----
-
-## API Routes
-
-| Route | Method | Description |
-|---|---|---|
-| `/api/infer` | POST | Node proxy → Python `/analyze` → MLP inference |
-| `/api/explain` | POST | Server-side prompt construction + LLM call (or fallback) |
-| `http://127.0.0.1:8000/health` | GET | Python service health check |
-| `http://127.0.0.1:8000/analyze` | POST | Direct MLP inference (multipart image) |
-
-### POST /api/infer
-
-```json
-{
-  "filename": "frame.jpg",
-  "contentType": "image/jpeg",
-  "data": "<base64-encoded image>"
-}
-```
-
-Response:
-```json
-{
-  "action": "prone",
-  "confidence": 0.834,
-  "framesAnalyzed": 1,
-  "rawAction": "prone",
-  "smoothed": true,
-  "modelProvenance": "InfActPrimitive-public-pose-finetune"
-}
-```
-
-### POST /api/explain
-
-```json
-{
-  "action": "prone",
-  "rawAction": "prone",
-  "confidence": 0.834,
-  "strategy": "B"
-}
-```
-
-Response:
-```json
-{
-  "explanation": "The posture detector identified the infant as lying face-down...",
-  "status": "llm_success",
-  "statusMessage": "Generated by LLM using Strategy B.",
-  "strategyName": "Caregiver-Friendly Explanation",
-  "displayPrompt": "[Strategy B — Caregiver-Friendly Explanation]...",
-  "isUnknown": false
-}
-```
-
----
-
-## Project Structure
-
-```
-baby-action-ai/
-├── client/src/
-│   ├── pages/Home.tsx          # Main UI — inference, GenAI, pipeline, model analysis
-│   └── components/             # shadcn/ui components
-├── server/
-│   ├── _core/
-│   │   ├── llm.ts              # invokeLLM() — Forge API with retry/backoff
-│   │   └── env.ts              # Environment variable definitions
-│   ├── inferenceProxy.ts       # POST /api/infer — Node → Python proxy
-│   ├── generateExplanation.ts  # POST /api/explain — prompt + LLM route
-│   ├── promptEngineering.ts    # Three prompt strategies (pure functions)
-│   └── routers.ts              # tRPC router
-├── shared/                     # Shared TypeScript types
-├── models/
-│   ├── infant_pose_mlp.pt      # Trained MLP checkpoint (82 KB)
-│   ├── labels.json             # ["supine","prone","sitting","standing","all-fours"]
-│   ├── metrics.json            # Offline validation metrics
-│   └── training_history.json   # Per-epoch training log
-│   # pose_landmarker_lite.task — NOT in repo, download separately (5.5 MB)
-├── inference_api.py            # FastAPI inference service (MediaPipe + MLP)
-├── train_public.py             # Offline training script
-├── requirements.txt            # Python dependencies
-├── package.json                # Node dependencies
-├── .env.example                # Environment variable template
-└── STARTUP_GUIDE.md            # Detailed demo setup guide
-```
-
----
-
-## Running Tests
+## Checks
 
 ```bash
-# TypeScript type check
-pnpm check
-
-# Unit tests (17 tests)
+pnpm run check
 pnpm test
-
-# Production build
-pnpm build
+pnpm run build
+.venv/bin/python -m unittest discover -s tests -p 'test_*.py' -v
 ```
 
-All tests verified passing: TypeScript clean, 17/17 unit tests pass, build succeeds.
+Python runtime dependencies are listed in `requirements.txt`. `GET /health` reports whether the model and pose task are loaded; `POST /analyze` accepts a multipart photo. The app provides `GET /api/infer/health` and `POST /api/infer` through the website origin.
 
----
+See [`FACULTY_RESPONSE.md`](FACULTY_RESPONSE.md) for the faculty feedback response, design rationale, evidence threshold and prerequisites for real notifications.
 
-## Responsible Use
+## Attribution and source terms
 
-- **Not a medical device.** Do not use for diagnosis, developmental assessment, or clinical decisions.
-- **Not a safety monitoring system.** Do not use for unattended infant monitoring or emergency alerts.
-- **Dataset terms.** The InfActPrimitive dataset is for non-commercial research only. Respect the original licence.
-- **LLM output.** Generated explanations may be inaccurate. Always display the original model prediction and confidence alongside any generated text.
-- **Camera.** Camera access is opt-in. Frames are sent for inference only; no video is stored.
-
----
-
-## Known Limitations
-
-- Trained on pose-only annotations — does not generalise across all cameras, lighting, or body types
-- Class imbalance: sitting (31.6% recall) and standing (38.9% recall) are underperformed
-- Mean confidence (77.87%) ≠ accuracy (64.21%) — a confident prediction can still be wrong
-- Video upload not yet supported by the inference service (images only)
-- Live-webcam accuracy may differ from offline validation (domain shift)
-
----
-
-## Team
-
-Applied Generative AI — 5th Semester B.Tech  
-Review-2 | October 2026
-
-See `REVIEW2_TEAM_WORK.md` for proposed member responsibilities.
-
----
-
-## License
-
-Research prototype. Training data subject to the InfActPrimitive dataset's non-commercial research terms.
+The checkpoint was trained on the public InfActPrimitive pose-only release described in `REAL_INFANT_MODEL_README.md`, including its official source links and non-commercial research-use warning. The source model and associated pose-task license/terms should be reviewed before any distribution or public/product deployment. Do not include private project configuration, API keys, environment files or another user's Git history when packaging this project.

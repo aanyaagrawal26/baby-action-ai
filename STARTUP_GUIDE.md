@@ -1,4 +1,6 @@
 # Startup Guide — GestureVerse-AI Demo
+> **Historical demo instructions.** This guide refers to an earlier camera/Prompt Lab prototype and obsolete test counts. The current site analyzes one uploaded still photo per request and has no camera or Prompt Engineering Lab. Use `README.md` for current setup and startup; do not follow the historical `.env` instructions.
+
 ## Two-terminal quick start for the presentation
 
 ---

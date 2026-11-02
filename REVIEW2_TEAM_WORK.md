@@ -1,4 +1,6 @@
 # REVIEW2_TEAM_WORK.md — GestureVerse-AI / Baby Action AI
+> **Historical presentation plan.** This team-division sheet refers to a previous camera and Prompt Lab prototype; its component assignments are not a description of the current website. Use `README.md` for the repaired still-photo application.
+
 ## Suggested Division of Work (Four Members)
 
 These are *proposed* responsibilities for the Review-2 presentation and viva.  

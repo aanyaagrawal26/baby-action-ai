@@ -1,5 +1,7 @@
 # REVIEW2_AUDIT.md — GestureVerse-AI / Baby Action AI
 
+> **Historical record:** This audit documents an earlier prototype. References below to live or 5-frame smoothing describe that earlier version, not the current one-still-photo-per-request website. See `README.md` and `MODEL_CARD.md` for current behavior.
+
 ## 1. Workspace Layout (Verified)
 
 ```

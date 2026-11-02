@@ -1,4 +1,7 @@
 # REVIEW2_DEMO_SCRIPT.md — GestureVerse-AI / Baby Action AI
+
+> **Historical record:** This script describes an earlier prototype. Its live-input and 5-frame smoothing instructions are not the current product behavior; the repaired website classifies each still photo independently. See `README.md` and `MODEL_CARD.md`.
+
 ## Strict 5-Minute Demo Plan
 
 Total: **5:00**

@@ -1,5 +1,7 @@
 # REVIEW2_IMPLEMENTATION.md — GestureVerse-AI / Baby Action AI
 
+> **Historical archive only.** This document describes an earlier prototype and contains obsolete live-camera, temporal-smoothing, Prompt Engineering Lab and test-count claims. The current product analyzes one uploaded still photo per request, has no camera or Prompt Engineering Lab, and is documented in `README.md`.
+
 ## 1. Implemented Functionality (Verified)
 
 The following are genuinely implemented and tested as of this document:

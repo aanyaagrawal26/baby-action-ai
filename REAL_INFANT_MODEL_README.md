@@ -1,5 +1,7 @@
 # Baby Action AI — Public Infant Pose Model
 
+> **Model and training reference.** This file preserves the dataset provenance and license information below. A few original notes describe an earlier live-camera prototype; the current website sends one still photo per request and applies no temporal smoothing. Use `README.md` for current app setup and behavior.
+
 This is the improved real-data model package for Baby Action AI. It trains on the official public **InfActPrimitive** infant pose release from Northeastern University / Augmented Cognition Lab.
 
 ## What changed
@@ -12,7 +14,7 @@ This is the improved real-data model package for Baby Action AI. It trains on th
 - Added mild pose-jitter and horizontal-mirror augmentation.
 - Added label smoothing, AdamW, gradient clipping, and validation checkpointing.
 - Added confidence gating: unclear frames return `unknown`.
-- Added temporal probability smoothing for live-camera stability.
+- A previous live-camera prototype used temporal probability smoothing; the current still-photo API does not.
 - Added a FastAPI image endpoint using MediaPipe Pose.
 
 ## Dataset and license
@@ -93,11 +95,11 @@ Environment settings:
 ```bash
 MODEL_PATH=models/infant_pose_mlp.pt
 CONFIDENCE_THRESHOLD=0.56
-SMOOTHING_WINDOW=5
+# The former live-camera SMOOTHING_WINDOW setting is obsolete and has no effect.
 ```
 
-The API accepts images and uses MediaPipe Pose to extract landmarks. Video/live-camera clients should send sampled JPEG frames. The website's `/api/infer` proxy can forward these frames to this service.
+The current website sends one still photo through `/api/infer` per request. Each upload is independent and has no temporal smoothing; the older live-camera/frame workflow is not part of the current website.
 
 ## Important limitation
 
-The public release contains pose data without raw RGB images. Therefore this model can be trained and evaluated on infant pose features, but live-image performance depends on MediaPipe successfully estimating an infant pose in the camera environment. For production-quality live images, fine-tune with consented RGB frames/videos from the actual camera and lighting setup, using person-held-out validation.
+The public release contains pose data without raw RGB images. Therefore this model can be trained and evaluated on infant pose features, but photo performance depends on MediaPipe successfully estimating an infant pose in each uploaded image. Any accuracy improvement requires appropriately consented photos from the target camera and lighting conditions, with person-held-out validation.
